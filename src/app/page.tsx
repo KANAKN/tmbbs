@@ -20,8 +20,7 @@ export default async function HomePage({
   searchParams: Promise<{ sort?: string }>
 }) {
   const { sort = 'newest' } = await searchParams
-  const cookieStore = await cookies()
-  const supabase = createClient(cookieStore)
+  const supabase = createClient()
 
   const { data: categories } = await supabase
     .from('Category')
