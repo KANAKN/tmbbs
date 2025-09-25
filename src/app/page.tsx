@@ -46,7 +46,7 @@ export default async function HomePage({
         if (queryError) {
           error = queryError
         } else {
-          questions = popularIds.map(id => popularQuestions.find(q => q.id === id)).filter((q): q is Question => !!q)
+          questions = popularIds.map((id: string) => popularQuestions.find(q => q.id === id)).filter((q): q is Question => !!q)
         }
       }
     }
