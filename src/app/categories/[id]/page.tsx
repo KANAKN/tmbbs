@@ -3,11 +3,14 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
-export default async function CategoryPage({
-  params,
-}: {
+// Next.js 15の仕様に合わせ、paramsとsearchParamsをPromiseとして定義
+type PageProps = {
   params: Promise<{ id: string }>
-}) {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function CategoryPage({ params }: PageProps) {
+  // paramsをawaitで解決
   const { id } = await params
   const supabase = createClient()
 
