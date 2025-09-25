@@ -4,13 +4,20 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { cookies } from 'next/headers'
 
+type Question = {
+  id: string
+  title: string
+  created_at: string
+  User: { id: string; username: string | null } | null
+}
+
 export default async function CategoryPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = createClient(cookies())
 
   // 1. カテゴリ情報を取得
   const { data: category } = await supabase
@@ -29,6 +36,7 @@ export default async function CategoryPage({
     .select('id, title, created_at, User(id, username)') // UserテーブルをJOIN
     .eq('category_id', id)
     .order('created_at', { ascending: false })
+    .returns<Question[]>()
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
