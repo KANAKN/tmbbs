@@ -14,7 +14,7 @@ async function getUserRole(supabase: SupabaseClient) {
 }
 
 export default async function AdminCategoriesPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   
   // ユーザーロールを確認し、Adminでなければ404を表示
   const role = await getUserRole(supabase)
