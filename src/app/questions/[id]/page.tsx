@@ -1,4 +1,3 @@
-// /Users/KN/code/tmbbs/src/app/questions/[id]/page.tsx
 import { createClient } from '@/utils/supabase/server'
 import { cookies, headers } from 'next/headers'
 import { notFound } from 'next/navigation'
@@ -6,13 +5,12 @@ import AnswerForm from '@/components/AnswerForm'
 import QuestionDisplay from '@/components/QuestionDisplay'
 import Link from 'next/link'
 
-type PageProps = {
-  params: {
-    id: string
-  }
-}
-
-export default async function QuestionDetailPage({ params }: PageProps) {
+export default async function QuestionDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
   const supabase = createClient()
 
   const headerList = headers()
@@ -37,7 +35,7 @@ export default async function QuestionDetailPage({ params }: PageProps) {
   const { data: question, error: questionError } = await supabase
     .from('Question')
     .select('*, User(id, username), Category(name), Tag(name)') // TagテーブルもJOIN
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (questionError || !question) {
@@ -62,7 +60,7 @@ export default async function QuestionDetailPage({ params }: PageProps) {
   let query = supabase
     .from('Answer')
     .select('*, User(id, username), Vote(count), user_votes:Vote(user_id)')
-    .eq('question_id', params.id)
+    .eq('question_id', id)
     .eq('user_votes.user_id', session?.user?.id)
   
   if (question.best_answer_id) {
@@ -89,7 +87,7 @@ export default async function QuestionDetailPage({ params }: PageProps) {
       />
 
       <AnswerForm
-        questionId={params.id}
+        questionId={id}
         userId={session?.user?.id}
         isQuestionOwner={isQuestionOwner}
       />

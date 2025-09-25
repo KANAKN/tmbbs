@@ -6,12 +6,6 @@ import SearchForm from '@/components/SearchForm'
 
 export const revalidate = 0
 
-type HomePageProps = {
-  searchParams: {
-    sort?: string
-  }
-}
-
 type Question = {
   id: string;
   title: string;
@@ -20,11 +14,14 @@ type Question = {
   Category: { id: string; name: string } | null;
 }
 
-export default async function HomePage({ searchParams: rawSearchParams }: HomePageProps) {
-  const searchParams = await rawSearchParams
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>
+}) {
+  const { sort = 'newest' } = await searchParams
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
-  const sort = searchParams.sort || 'newest'
 
   const { data: categories } = await supabase
     .from('Category')

@@ -5,12 +5,6 @@ import { cookies } from 'next/headers'
 
 export const revalidate = 0
 
-type SearchPageProps = {
-  searchParams: {
-    q?: string
-  }
-}
-
 type Question = {
   id: string
   title: string
@@ -18,10 +12,14 @@ type Question = {
 }
 
 // 検索結果ページ (サーバーコンポーネント)
-export default async function SearchPage({ searchParams }: SearchPageProps) {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q: query } = await searchParams
   const cookieStore = cookies()
   const supabase = createClient(cookieStore)
-  const query = searchParams.q || ''
   let questions: Question[] | null = []
   let error = null
 

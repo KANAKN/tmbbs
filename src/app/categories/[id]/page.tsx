@@ -2,17 +2,15 @@ import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { cookies } from 'next/headers'
 
-// Next.js 15の仕様に合わせ、paramsとsearchParamsをPromiseとして定義
-type PageProps = {
+export default async function CategoryPage({
+  params,
+}: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
-
-export default async function CategoryPage({ params }: PageProps) {
-  // paramsをawaitで解決
+}) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = createClient(cookies())
 
   // 1. カテゴリ情報を取得
   const { data: category } = await supabase
