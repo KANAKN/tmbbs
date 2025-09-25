@@ -11,7 +11,7 @@ type PageProps = {
   }
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params }: { params: any }) {
   const supabase = createClient()
 
   // 1. カテゴリ情報を取得
