@@ -1,4 +1,3 @@
-// /Users/KN/code/tmbbs/src/app/categories/[id]/page.tsx
 import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
