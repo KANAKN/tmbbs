@@ -13,7 +13,7 @@ export default async function QuestionDetailPage({
   const { id } = await params
   const supabase = createClient()
 
-  const headerList = headers()
+  const headerList = await headers()
   const referer = headerList.get('referer')
   let fromSearch = false
   let searchBackUrl = ''
