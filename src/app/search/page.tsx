@@ -18,8 +18,7 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string }>
 }) {
   const { q: query } = await searchParams
-  const cookieStore = cookies()
-  const supabase = createClient(cookieStore)
+  const supabase = createClient()
   let questions: Question[] | null = []
   let error = null
 
