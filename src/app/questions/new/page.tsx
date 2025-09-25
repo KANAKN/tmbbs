@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import NewQuestionForm from './_components/NewQuestionForm'
 
 export default async function NewQuestionPage() {
-  const supabase = createClient(cookies)
+  const supabase = createClient()
 
   const {
     data: { session },
