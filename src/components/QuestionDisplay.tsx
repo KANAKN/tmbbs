@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import QuestionActions from '@/components/QuestionActions'
 import BestAnswerButton from '@/components/BestAnswerButton'
 import VoteButton from '@/components/VoteButton'
+import { createClient } from '@/utils/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 // --- 型定義 ---
@@ -49,23 +50,16 @@ type QuestionDisplayProps = {
 }
 
 // 回答を表示するためのカードコンポーネント
-function AnswerCard({
-  answer,
-  isBestAnswer,
-  session,
-  isQuestionOwner,
-  question,
-}: {
-  answer: AnswerWithRelations
-  isBestAnswer: boolean
-  session: { user: User } | null
-  isQuestionOwner: boolean
-  question: QuestionWithRelations
+function AnswerCard({ answer, isBestAnswer, session, isQuestionOwner, question }: {
+  answer: AnswerWithRelations,
+  isBestAnswer: boolean,
+  session: { user: User } | null,
+  isQuestionOwner: boolean,
+  question: QuestionWithRelations,
 }) {
-  const cardClasses =
-    isBestAnswer
-      ? 'bg-green-50 border-2 border-green-500 shadow-lg rounded-lg p-6'
-      : 'bg-white shadow-md rounded-lg p-6 border border-gray-200';
+  const cardClasses = isBestAnswer
+    ? "bg-green-50 border-2 border-green-500 shadow-lg rounded-lg p-6"
+    : "bg-white shadow-md rounded-lg p-6 border border-gray-200";
 
   return (
     <div className={cardClasses}>
@@ -101,17 +95,42 @@ function AnswerCard({
 }
 
 // 質問全体を表示するメインコンポーネント
-export default function QuestionDisplay({
-  initialQuestion,
-  initialAnswers,
-  session,
-  isQuestionOwner,
-}: QuestionDisplayProps) {
-  if (!initialQuestion) {
+export default function QuestionDisplay({ initialQuestion, initialAnswers, session, isQuestionOwner }: QuestionDisplayProps) {
+  const [question, setQuestion] = useState(initialQuestion)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedDescription, setEditedDescription] = useState(question.description || '')
+  const supabase = createClient()
+
+  if (!question) {
     return <div className="text-center p-8">質問が見つかりませんでした。</div>;
   }
 
-  const bestAnswer = initialQuestion.bestAnswer;
+  const handleEditClick = () => {
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditedDescription(question.description || '')
+  }
+
+  const handleSaveEdit = async () => {
+    const { data, error } = await supabase
+      .from('Question')
+      .update({ description: editedDescription })
+      .eq('id', question.id)
+      .select()
+      .single()
+
+    if (error) {
+      alert('質問の更新に失敗しました。')
+    } else {
+      setQuestion(data)
+      setIsEditing(false)
+    }
+  }
+
+  const bestAnswer = question.bestAnswer;
   const otherAnswers = initialAnswers.filter(a => a.id !== bestAnswer?.id);
 
   return (
@@ -120,35 +139,49 @@ export default function QuestionDisplay({
       <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
         <div className="flex justify-between items-start mb-4">
           <div>
-            {initialQuestion.Category?.name &&
+            {question.Category?.name &&
               <span className="inline-block bg-gray-200 text-gray-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
-                {initialQuestion.Category.name}
+                {question.Category.name}
               </span>
             }
-            <h1 className="text-3xl font-bold text-gray-900 mt-2">{initialQuestion.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mt-2">{question.title}</h1>
           </div>
-          {session?.user?.id === initialQuestion.user_id && (
-            <QuestionActions questionId={initialQuestion.id} />
+          {session?.user?.id === question.user_id && (
+            <QuestionActions questionId={question.id} onEditClick={handleEditClick} />
           )}
         </div>
 
         <div className="text-sm text-gray-500 mb-4">
           <span>
-            投稿者: {initialQuestion.User?.username || 'Anonymous'}
+            投稿者: {question.User?.username || 'Anonymous'}
           </span>
           <span className="mx-2">|</span>
           <span>
-            投稿日: {format(new Date(initialQuestion.created_at), 'yyyy年MM月dd日 HH:mm')}
+            投稿日: {format(new Date(question.created_at), 'yyyy年MM月dd日 HH:mm')}
           </span>
         </div>
 
-        <div
-          className="prose max-w-none text-gray-800"
-          dangerouslySetInnerHTML={{ __html: initialQuestion.description?.replace(/\n/g, '<br />') || '' }}
-        />
+        {isEditing ? (
+          <div className="space-y-4">
+            <textarea
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              className="w-full h-40 p-2 border rounded"
+            />
+            <div className="flex justify-end space-x-2">
+              <button onClick={handleCancelEdit} className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded hover:bg-gray-300">キャンセル</button>
+              <button onClick={handleSaveEdit} className="px-4 py-2 text-sm text-white bg-teal-600 rounded hover:bg-teal-700">保存</button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="prose max-w-none text-gray-800"
+            dangerouslySetInnerHTML={{ __html: question.description?.replace(/\n/g, '<br />') || '' }}
+          />
+        )}
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {initialQuestion.Tag.map(tag => (
+          {question.Tag.map(tag => (
             <Link href={`/tags/${tag.name}`} key={tag.name} className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200">
                 {tag.name}
             </Link>
@@ -165,7 +198,7 @@ export default function QuestionDisplay({
             isBestAnswer={true}
             session={session}
             isQuestionOwner={isQuestionOwner}
-            question={initialQuestion}
+            question={question}
           />
         </div>
       )}
@@ -184,7 +217,7 @@ export default function QuestionDisplay({
                 isBestAnswer={false}
                 session={session}
                 isQuestionOwner={isQuestionOwner}
-                question={initialQuestion}
+                question={question}
               />
             ))
           ) : (
