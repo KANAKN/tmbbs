@@ -5,13 +5,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
-type PageProps = {
-  params: {
-    id: string
-  }
-}
-
-export default async function CategoryPage({ params }: { params: any }) {
+export default async function CategoryPage({
+  params,
+}: {
+  params: { id: string }
+}) {
   const supabase = createClient()
 
   // 1. カテゴリ情報を取得
