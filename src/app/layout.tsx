@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
-import Header from '@/components/Header'
+// import Header from '@/components/Header' // デバッグのためコメントアウト
 import { cn } from '@/lib/utils'
-import SubHeader from '@/components/SubHeader'
+// import SubHeader from '@/components/SubHeader' // デバッグのためコメントアウト
 
 const font = GeistSans
 const monoFont = GeistMono
@@ -22,8 +22,8 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={cn('antialiased bg-custom-blue-50 text-teal-950', font.variable, monoFont.variable)}>
-        <Header />
-        <SubHeader />
+        {/* <Header /> */}
+        {/* <SubHeader /> */}
         <main>{children}</main>
       </body>
     </html>
