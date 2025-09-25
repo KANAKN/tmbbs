@@ -1,9 +1,9 @@
 // /Users/KN/code/tmbbs/src/app/admin/categories/page.tsx
-import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import CategoryManager from './_components/CategoryManager'
-import { createClient as createServerSupabaseClient, SupabaseClient } from '@/utils/supabase/server'
+import { createClient as createServerSupabaseClient } from '@/utils/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // ユーザーのロールを取得するヘルパー関数
 async function getUserRole(supabase: SupabaseClient) {
