@@ -10,8 +10,7 @@ export default async function UserPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const cookieStore = cookies()
-  const supabase = createClient(cookieStore)
+  const supabase = createClient()
 
   const { data: user } = await supabase
     .from('User')
