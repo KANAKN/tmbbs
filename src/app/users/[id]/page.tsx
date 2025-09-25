@@ -10,7 +10,7 @@ export default async function UserPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: user } = await supabase
     .from('User')
