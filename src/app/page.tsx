@@ -58,7 +58,7 @@ export default async function HomePage({
       query = query.not('best_answer_id', 'is', null)
     }
     query = query.order('created_at', { ascending: false })
-    const { data: fetchedQuestions, error: queryError } = await query
+    const { data: fetchedQuestions, error: queryError } = await query.returns<Question[]>()
     questions = fetchedQuestions
     error = queryError
   }
