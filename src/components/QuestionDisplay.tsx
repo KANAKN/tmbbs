@@ -84,10 +84,9 @@ function AnswerCard({
 
       <div className="mt-4 flex justify-between items-center">
         <VoteButton
-          targetId={answer.id}
-          targetType="answer"
+          answerId={answer.id}
           initialVotes={answer.Vote[0]?.count || 0}
-          initialUserVote={answer.user_votes.length > 0}
+          initialIsVoted={answer.user_votes.length > 0}
           userId={session?.user?.id}
         />
         {isQuestionOwner && !question.best_answer_id && (
