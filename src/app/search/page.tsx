@@ -18,7 +18,7 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string }>
 }) {
   const { q: query } = await searchParams
-  const supabase = createClient()
+  const supabase = await createClient()
   let questions: Question[] | null = []
   let error = null
 
