@@ -17,7 +17,7 @@ export default async function CategoryPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = createClient(cookies())
+  const supabase = createClient()
 
   // 1. カテゴリ情報を取得
   const { data: category } = await supabase
