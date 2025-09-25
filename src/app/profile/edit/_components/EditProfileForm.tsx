@@ -163,9 +163,17 @@ export function ChangePasswordForm() {
 
     setLoading(true)
 
+    // まず非同期で現在のユーザー情報を取得
+    const { data: { user: currentUser } } = await supabase.auth.getUser()
+    if (!currentUser) {
+      setError('ユーザー情報が取得できませんでした。')
+      setLoading(false)
+      return
+    }
+
     // Supabaseのパスワード更新機能は、まず現在のパスワードで再認証が必要
     const { data: { user }, error: reauthError } = await supabase.auth.signInWithPassword({
-      email: supabase.auth.user()?.email || '',
+      email: currentUser.email || '',
       password: currentPassword,
     })
 
