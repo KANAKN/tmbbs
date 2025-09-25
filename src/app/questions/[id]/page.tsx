@@ -1,0 +1,98 @@
+// /Users/KN/code/tmbbs/src/app/questions/[id]/page.tsx
+import { createClient } from '@/utils/supabase/server'
+import { cookies, headers } from 'next/headers'
+import { notFound } from 'next/navigation'
+import AnswerForm from '@/components/AnswerForm'
+import QuestionDisplay from '@/components/QuestionDisplay'
+import Link from 'next/link'
+
+type PageProps = {
+  params: {
+    id: string
+  }
+}
+
+export default async function QuestionDetailPage({ params }: PageProps) {
+  const supabase = createClient()
+
+  const headerList = headers()
+  const referer = headerList.get('referer')
+  let fromSearch = false
+  let searchBackUrl = ''
+  if (referer) {
+    try {
+      const refererUrl = new URL(referer)
+      if (refererUrl.pathname === '/search') {
+        fromSearch = true
+        searchBackUrl = referer
+      }
+    } catch (error) {
+      console.error('Invalid referer URL:', error)
+    }
+  }
+
+  const { data: { session } } = await supabase.auth.getSession()
+
+  // --- ステップ1: 質問と投稿者、カテゴリ、タグの基本情報を取得 ---
+  const { data: question, error: questionError } = await supabase
+    .from('Question')
+    .select('*, User(id, username), Category(name), Tag(name)') // TagテーブルもJOIN
+    .eq('id', params.id)
+    .single()
+
+  if (questionError || !question) {
+    return notFound()
+  }
+
+  // --- ステップ2: ベストアンサーの情報を取得 (存在する場合のみ) ---
+  let bestAnswer = null
+  if (question.best_answer_id) {
+    const { data: bestAnswerData } = await supabase
+      .from('Answer')
+      .select('*, User(id, username), Vote(count), user_votes:Vote(user_id)')
+      .eq('id', question.best_answer_id)
+      .eq('user_votes.user_id', session?.user?.id)
+      .single()
+    bestAnswer = bestAnswerData
+  }
+  // questionオブジェクトにbestAnswerを合体させる
+  const finalQuestion = { ...question, bestAnswer }
+
+  // --- ステップ3: ベストアンサー以外の回答リストを取得 ---
+  let query = supabase
+    .from('Answer')
+    .select('*, User(id, username), Vote(count), user_votes:Vote(user_id)')
+    .eq('question_id', params.id)
+    .eq('user_votes.user_id', session?.user?.id)
+  
+  if (question.best_answer_id) {
+    query = query.not('id', 'eq', question.best_answer_id)
+  }
+  
+  const { data: answers } = await query.order('created_at', { ascending: true })
+
+  const isQuestionOwner = session?.user?.id === question.user_id
+
+  return (
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      {fromSearch && (
+        <Link href={searchBackUrl} className="text-blue-600 hover:underline text-sm mb-4 inline-block">
+          &larr; 検索結果に戻る
+        </Link>
+      )}
+
+      <QuestionDisplay
+        initialQuestion={finalQuestion}
+        initialAnswers={answers || []}
+        session={session}
+        isQuestionOwner={isQuestionOwner}
+      />
+
+      <AnswerForm
+        questionId={params.id}
+        userId={session?.user?.id}
+        isQuestionOwner={isQuestionOwner}
+      />
+    </div>
+  )
+}
