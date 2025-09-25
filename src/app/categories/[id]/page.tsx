@@ -12,7 +12,7 @@ type PageProps = {
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const supabase = createClient(cookies)
+  const supabase = createClient()
 
   // 1. カテゴリ情報を取得
   const { data: category } = await supabase
