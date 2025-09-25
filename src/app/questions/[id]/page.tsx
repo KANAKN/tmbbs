@@ -11,7 +11,7 @@ export default async function QuestionDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const headerList = await headers()
   const referer = headerList.get('referer')
