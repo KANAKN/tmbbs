@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import EditProfileForm, { ChangePasswordForm } from './_components/EditProfileForm' // 1つのファイルから両方をインポート
 
 export default async function EditProfilePage() {
-  const supabase = createClient(cookies)
+  const supabase = createClient()
 
   // ログインユーザーのセッションを取得
   const {
