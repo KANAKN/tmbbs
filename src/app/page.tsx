@@ -20,7 +20,7 @@ export default async function HomePage({
   searchParams: Promise<{ sort?: string }>
 }) {
   const { sort = 'newest' } = await searchParams
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: categories } = await supabase
     .from('Category')
