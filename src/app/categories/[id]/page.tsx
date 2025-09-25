@@ -1,6 +1,4 @@
-// /Users/KN/code/tmbbs/src/app/categories/[id]/page.tsx
 import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -8,15 +6,16 @@ import { format } from 'date-fns'
 export default async function CategoryPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const supabase = createClient(cookies())
+  const { id } = await params
+  const supabase = createClient()
 
   // 1. カテゴリ情報を取得
   const { data: category } = await supabase
     .from('Category')
     .select('name')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!category) {
@@ -27,7 +26,7 @@ export default async function CategoryPage({
   const { data: questions } = await supabase
     .from('Question')
     .select('id, title, created_at, User(id, username)') // UserテーブルをJOIN
-    .eq('category_id', params.id)
+    .eq('category_id', id)
     .order('created_at', { ascending: false })
 
   return (
