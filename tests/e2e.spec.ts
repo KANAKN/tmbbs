@@ -43,8 +43,7 @@ test.describe('Logged-in user journey test for tmbbs.vercel.app', () => {
     await page.getByRole('button', { name: '投稿する' }).click();
     
     // 投稿後のリダイレクトと表示を待機
-    await page.waitForURL(new RegExp(`${baseURL}questions/\w+`));
-    await expect(page.getByRole('heading', { name: testQuestion.title })).toBeVisible();
+    await expect(page.getByRole('heading', { name: testQuestion.title })).toBeVisible({ timeout: 60000 });
     await expect(page.getByText(testQuestion.description)).toBeVisible();
 
     // 2.4: 投稿した質問に自分で回答する

@@ -48,7 +48,7 @@ export default function AnswerForm({ questionId, userId, isQuestionOwner }: Answ
       alert(`エラーが発生しました: ${error.message}`)
     } else {
       setContent('') // フォームをクリア
-      router.refresh() // ページを再読み込みして新しい回答を表示
+      window.location.reload() // ページを再読み込みして新しい回答を表示
     }
   }
 
