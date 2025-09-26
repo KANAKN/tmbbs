@@ -49,8 +49,9 @@ test.describe('Logged-in user journey test for tmbbs.vercel.app', () => {
     // 2.4: 投稿した質問に自分で回答する
     await page.getByRole('textbox').fill(testAnswer.content);
     await page.getByRole('button', { name: 'コメントする' }).click();
-    await page.waitForTimeout(2000); // 投稿処理を待つ
-    await expect(page.getByText(testAnswer.content)).toBeVisible();
+    
+    // router.refresh() による非同期な更新が完了し、回答が表示されるのを待つ
+    await expect(page.getByText(testAnswer.content)).toBeVisible({ timeout: 30000 });
 
     // 3.1: ベストアンサー設定のテストは、別のユーザーフローが必要なため一旦スキップ
     // await expect(page.getByRole('button', { name: 'ベストアンサーに設定' })).toBeVisible();

@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
+- generic [ref=e1]:
   - banner [ref=e2]:
     - navigation [ref=e4]:
       - link "Tech Mentor Logo" [ref=e5] [cursor=pointer]:
@@ -22,14 +22,14 @@
           - generic [ref=e18]:
             - generic [ref=e19]:
               - generic [ref=e20]: Next.js
-              - heading "Playwright test question 1758865461627" [level=1] [ref=e21]
+              - heading "Playwright test question 1758865500716" [level=1] [ref=e21]
             - generic [ref=e22]:
               - button "編集" [ref=e23]
               - button "削除" [ref=e24]
           - generic [ref=e25]:
             - generic [ref=e26]: "投稿者: 吉田茂"
             - generic [ref=e27]: "|"
-            - generic [ref=e28]: "投稿日: 2025年09月26日 14:44"
+            - generic [ref=e28]: "投稿日: 2025年09月26日 14:45"
           - generic [ref=e29]: This is a test question created by an automated Playwright script.
         - generic [ref=e30]:
           - heading "0件の回答" [level=2] [ref=e31]
@@ -38,6 +38,6 @@
         - heading "コメントを追記" [level=3] [ref=e35]
         - generic [ref=e36]:
           - textbox "補足説明やコメントを追記..." [ref=e37]
-          - button "コメントする" [ref=e39]
+          - button "コメントする" [active] [ref=e39]
   - alert [ref=e40]
 ```
