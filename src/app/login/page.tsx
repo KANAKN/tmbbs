@@ -27,10 +27,8 @@ export default function Login() {
       // エラーが発生した場合
       setMessage(`エラー: ${error.message}`)
     } else {
-      // 成功した場合、TOPページにリダイレクト
-      router.push('/')
-      // サーバーコンポーネントを再取得するためにリフレッシュ
-      router.refresh() 
+      // 成功した場合、ページを完全にリロードしてTOPページに遷移
+      window.location.href = '/' 
     }
   }
 
