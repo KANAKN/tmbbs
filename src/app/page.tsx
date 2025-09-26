@@ -147,7 +147,7 @@ export default async function HomePage({
                     <span>投稿者:</span>
                     <Link 
                       href={`/users/${question.User?.id}`} 
-                      className={isOwnQuestion ? "text-red-500 font-bold hover:underline" : "text-teal-600 hover:underline"}
+                      className={isOwnQuestion ? "text-red-500 hover:underline" : "text-teal-600 hover:underline"}
                     >
                       {question.User?.username || '匿名'}
                     </Link>
