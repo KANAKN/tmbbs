@@ -11,17 +11,16 @@ export default function LogoutButton() {
   // ログアウト処理
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    // ページをリフレッシュしてサーバーコンポーネントの状態を更新
-    router.refresh()
+    // ページを完全にリロードしてログアウト状態を反映
+    window.location.href = '/'
   }
 
   return (
-        <form action="/auth/sign-out" method="post">
-          <button
-            type="submit"
-            className="px-4 py-2 text-sm text-white bg-red-400 rounded-md hover:bg-red-500 transition-colors"
-          >
-            ログアウト
-          </button>
-        </form>  )
+    <button
+      onClick={handleLogout}
+      className="px-4 py-2 text-sm text-white bg-red-400 rounded-md hover:bg-red-500 transition-colors"
+    >
+      ログアウト
+    </button>
+  )
 }
