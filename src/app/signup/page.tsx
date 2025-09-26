@@ -15,21 +15,34 @@ export default function SignUpPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage('')
+    setError('')
 
-    // Supabaseのサインアップ機能を呼び出し
-    const { error } = await supabase.auth.signUp({
+    // 1. Supabaseにユーザーを登録
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
     })
 
-    if (error) {
-      // エラーが発生した場合
-      setMessage(`エラー: ${error.message}`)
+    if (signUpError) {
+      setError(`エラー: ${signUpError.message}`)
+      return
+    }
+
+    // 2. サインアップ成功後、そのままログイン処理を実行
+    if (signUpData.user) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        setError(`ログインに失敗しました: ${signInError.message}`)
+      } else {
+        // 3. ログイン成功後、ページをリロードしてトップに遷移
+        window.location.href = '/'
+      }
     } else {
-      // 成功した場合
-      setMessage('確認メールを送信しました。受信箱をご確認ください。')
-      // ここでログインページにリダイレクトすることも可能
-      // router.push('/login')
+        setError('サインアップに成功しましたが、ユーザー情報が取得できませんでした。ログインページから再度お試しください。')
     }
   }
 
@@ -74,7 +87,10 @@ export default function SignUpPage() {
           </button>
         </form>
         {message && (
-          <p className="mt-4 text-center text-sm text-red-500">{message}</p>
+          <p className="mt-4 text-center text-sm text-green-500">{message}</p>
+        )}
+        {error && (
+          <p className="mt-4 text-center text-sm text-red-500">{error}</p>
         )}
       </div>
     </div>
