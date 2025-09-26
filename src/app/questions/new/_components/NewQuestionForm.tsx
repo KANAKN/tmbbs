@@ -56,8 +56,7 @@ export default function NewQuestionForm({ user, categories }: NewQuestionFormPro
     }
     
     setLoading(false)
-    router.push(`/questions/${newQuestion.id}`)
-    router.refresh()
+    window.location.href = `/questions/${newQuestion.id}`
   }
 
   return (
