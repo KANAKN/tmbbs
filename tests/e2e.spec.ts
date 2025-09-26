@@ -50,7 +50,13 @@ test.describe('Logged-in user journey test for tmbbs.vercel.app', () => {
     await page.getByRole('textbox').fill(testAnswer.content);
     await page.getByRole('button', { name: 'コメントする' }).click();
     
-    // router.refresh() による非同期な更新が完了し、回答が表示されるのを待つ
+    // 回答投稿後、手動でページをリロード
+    await page.waitForTimeout(1000);
+    await page.reload();
+
+    // insertが成功したか（フォームがクリアされたか）を確認
+    await expect(page.getByRole('textbox')).toBeEmpty();
+    // 回答が表示されているかを確認
     await expect(page.getByText(testAnswer.content)).toBeVisible({ timeout: 30000 });
 
     // 3.1: ベストアンサー設定のテストは、別のユーザーフローが必要なため一旦スキップ

@@ -5,6 +5,8 @@ import AnswerForm from '@/components/AnswerForm'
 import QuestionDisplay from '@/components/QuestionDisplay'
 import Link from 'next/link'
 
+export const revalidate = 0 // この行を追加して動的レンダリングを強制
+
 export default async function QuestionDetailPage({
   params,
 }: {
