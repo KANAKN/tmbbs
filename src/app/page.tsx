@@ -1,8 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import SearchForm from '@/components/SearchForm'
+import { cookies } from 'next/headers'
 
 export const revalidate = 0
 
@@ -21,6 +21,9 @@ export default async function HomePage({
 }) {
   const { sort = 'newest' } = await searchParams
   const supabase = await createClient()
+
+  // 現在のユーザー情報を取得
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: categories } = await supabase
     .from('Category')
@@ -115,42 +118,48 @@ export default async function HomePage({
       </div>
       <div className="space-y-4">
         {questions && questions.length > 0 ? (
-          questions.map((question, index) => (
-            <div
-              key={question.id}
-              className="flex items-start space-x-4 p-4 bg-white rounded-lg border border-slate-200 transition-shadow hover:shadow-md"
-            >
-              {sort === 'popular' && (
-                <div className="flex-shrink-0 w-10 text-center">
-                  <span className="text-2xl font-bold text-slate-400">{index + 1}</span>
-                </div>
-              )}
-              <div className="flex-grow">
-                <Link href={`/questions/${question.id}`}>
-                  <h2 className="text-xl font-semibold text-slate-800 hover:text-teal-600">{question.title}</h2>
-                </Link>
-                <div className="flex items-center flex-wrap text-sm text-slate-500 mt-2 gap-x-3">
-                  <span>カテゴリ:</span>
-                  {question.Category ? (
-                    <Link href={`/categories/${question.Category.id}`} className="font-semibold text-teal-800 bg-teal-100 px-2 py-1 rounded-md hover:bg-teal-200 text-xs">
-                      {question.Category.name}
-                    </Link>
-                  ) : (
-                    <span className="text-xs">未分類</span>
-                  )}
-                  <span>|</span>
-                  <span>投稿者:</span>
-                  <Link href={`/users/${question.User?.id}`} className="text-teal-600 hover:underline">
-                    {question.User?.username || '匿名'}
+          questions.map((question, index) => {
+            const isOwnQuestion = user && question.User?.id === user.id;
+            return (
+              <div
+                key={question.id}
+                className="flex items-start space-x-4 p-4 bg-white rounded-lg border border-slate-200 transition-shadow hover:shadow-md"
+              >
+                {sort === 'popular' && (
+                  <div className="flex-shrink-0 w-10 text-center">
+                    <span className="text-2xl font-bold text-slate-400">{index + 1}</span>
+                  </div>
+                )}
+                <div className="flex-grow">
+                  <Link href={`/questions/${question.id}`}>
+                    <h2 className="text-xl font-semibold text-slate-800 hover:text-teal-600">{question.title}</h2>
                   </Link>
-                  <span>|</span>
-                  <span>
-                    投稿日時: {format(new Date(question.created_at), 'yyyy年MM月dd日 HH:mm')}
-                  </span>
+                  <div className="flex items-center flex-wrap text-sm text-slate-500 mt-2 gap-x-3">
+                    <span>カテゴリ:</span>
+                    {question.Category ? (
+                      <Link href={`/categories/${question.Category.id}`} className="font-semibold text-teal-800 bg-teal-100 px-2 py-1 rounded-md hover:bg-teal-200 text-xs">
+                        {question.Category.name}
+                      </Link>
+                    ) : (
+                      <span className="text-xs">未分類</span>
+                    )}
+                    <span>|</span>
+                    <span>投稿者:</span>
+                    <Link 
+                      href={`/users/${question.User?.id}`} 
+                      className={isOwnQuestion ? "text-red-500 font-bold hover:underline" : "text-teal-600 hover:underline"}
+                    >
+                      {question.User?.username || '匿名'}
+                    </Link>
+                    <span>|</span>
+                    <span>
+                      投稿日時: {format(new Date(question.created_at), 'yyyy年MM月dd日 HH:mm')}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            )
+          })
         ) : (
           <div className="text-center py-10 bg-white rounded-lg border border-slate-200">
             <p className="text-slate-500">まだ質問がありません。</p>
