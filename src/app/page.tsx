@@ -78,7 +78,7 @@ export default async function HomePage({
       error = queryError
     } else if (allQuestions) {
       // 各質問のいいね数を取得
-      const questionsWithVotes = await Promise.all(
+      const questionsWithVotes: Question[] = await Promise.all(
         allQuestions.map(async (question) => {
           // この質問の回答IDを取得
           const { data: answers } = await supabase
@@ -100,7 +100,12 @@ export default async function HomePage({
           }
           
           return {
-            ...question,
+            id: question.id,
+            title: question.title,
+            created_at: question.created_at,
+            User: question.User?.[0] || null,
+            Category: question.Category?.[0] || null,
+            Tag: question.Tag || [],
             vote_count: voteCount
           }
         })
@@ -108,7 +113,7 @@ export default async function HomePage({
       
       // いいね数でソート（降順）
       questions = questionsWithVotes
-        .sort((a, b) => b.vote_count - a.vote_count)
+        .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
         .slice(offset, offset + pageSize)
     }
   }

@@ -51,9 +51,21 @@ export default async function EditQuestionPage({
   // タグを文字列に変換
   const tagsString = question.Tag?.map(tag => tag.name).join(', ') || ''
 
+  // 型を変換してEditQuestionFormに渡す
+  const formattedQuestion = {
+    id: question.id,
+    title: question.title,
+    description: question.description,
+    user_id: question.user_id,
+    category_id: question.category_id,
+    is_draft: question.is_draft,
+    Category: question.Category?.[0] || null,
+    Tag: question.Tag || []
+  }
+
   return (
     <EditQuestionForm
-      question={question}
+      question={formattedQuestion}
       categories={categories || []}
       tagsString={tagsString}
       user={session.user}
