@@ -40,6 +40,7 @@ export default function Header() {
               width={150}
               height={40}
               priority
+              className="h-auto"
             />
           </Link>
           <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
@@ -50,8 +51,8 @@ export default function Header() {
                     カテゴリ管理
                   </Link>
                 )}
-                <Link href="/profile/edit" className="text-sm text-slate-600 hover:text-slate-900">
-                  プロフィール編集
+                <Link href={`/users/${user.id}`} className="text-sm text-slate-600 hover:text-slate-900">
+                  マイページ
                 </Link>
                 <LogoutButton />
               </>

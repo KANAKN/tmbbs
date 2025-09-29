@@ -15,19 +15,22 @@ export default function QuestionActions({ questionId, onEditClick }: QuestionAct
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // 質問を論理削除する処理
   const handleDelete = async () => {
-    if (!confirm('本当にこの質問を削除しますか？関連する回答もすべて削除されます。')) {
-      return
-    }
-    setIsDeleting(true)
-    const { error } = await supabase.from('Question').delete().eq('id', questionId)
-    if (error) {
-      alert(`削除中にエラーが発生しました: ${error.message}`)
-      setIsDeleting(false)
-    } else {
-      alert('質問を削除しました。')
-      router.push('/')
-      router.refresh()
+    if (window.confirm('この質問を削除してもよろしいですか？この操作は元に戻せません。')) {
+      const { error } = await supabase
+        .from('Question')
+        .update({ deleted_at: new Date().toISOString() }) // 論理削除
+        .eq('id', questionId)
+
+      if (error) {
+        alert('削除中にエラーが発生しました: ' + error.message)
+      } else {
+        alert('質問を削除しました。')
+        // トップページに遷移
+        router.push('/')
+        router.refresh() // ページを再読み込みして変更を反映
+      }
     }
   }
 

@@ -8,6 +8,7 @@ export default function SignUpPage() {
   const supabase = createClient()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('') // 確認用パスワードのstateを追加
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const router = useRouter()
@@ -17,8 +18,14 @@ export default function SignUpPage() {
     setMessage('')
     setError('')
 
+    // パスワード一致チェックを追加
+    if (password !== confirmPassword) {
+      setError('パスワードが一致しません。')
+      return
+    }
+
     // 1. Supabaseにユーザーを登録
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
     })
@@ -28,22 +35,8 @@ export default function SignUpPage() {
       return
     }
 
-    // 2. サインアップ成功後、そのままログイン処理を実行
-    if (signUpData.user) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) {
-        setError(`ログインに失敗しました: ${signInError.message}`)
-      } else {
-        // 3. ログイン成功後、ページをリロードしてトップに遷移
-        window.location.href = '/'
-      }
-    } else {
-        setError('サインアップに成功しましたが、ユーザー情報が取得できませんでした。ログインページから再度お試しください。')
-    }
+    // 2. サインアップ成功後、確認メールの送信を通知
+    setMessage('確認メールを送信しました。メールボックスを確認し、リンクをクリックして登録を完了してください。')
   }
 
   return (
@@ -65,7 +58,7 @@ export default function SignUpPage() {
               placeholder="email@example.com"
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block mb-2 text-sm font-medium text-gray-700" htmlFor="password">
               パスワード
             </label>
@@ -74,6 +67,21 @@ export default function SignUpPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
+              placeholder="••••••••"
+            />
+          </div>
+          {/* 確認用パスワードの入力欄を追加 */}
+          <div className="mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700" htmlFor="confirm-password">
+              パスワード（確認用）
+            </label>
+            <input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
               placeholder="••••••••"

@@ -1,0 +1,54 @@
+-- This is the definitive and final version of the function.
+-- It correctly filters out soft-deleted records at the source.
+CREATE OR REPLACE FUNCTION get_user_activity(p_user_id UUID)
+RETURNS JSON AS $$
+DECLARE
+    user_questions JSON;
+    user_answers JSON;
+    user_voted_answers JSON;
+BEGIN
+    -- 1. Get questions posted by the user (excluding soft-deleted ones)
+    SELECT json_agg(q) INTO user_questions
+    FROM (
+        SELECT id, title, created_at
+        FROM public."Question"
+        WHERE user_id = p_user_id
+          AND deleted_at IS NULL -- CRITICAL FIX
+        ORDER BY created_at DESC
+    ) q;
+
+    -- 2. Get answers posted by the user (excluding soft-deleted answers AND answers to soft-deleted questions)
+    SELECT json_agg(a) INTO user_answers
+    FROM (
+        SELECT ans.id, ans.content, ans.created_at,
+               json_build_object('id', q.id, 'title', q.title) AS "Question"
+        FROM public."Answer" AS ans
+        JOIN public."Question" AS q ON ans.question_id = q.id
+        WHERE ans.user_id = p_user_id
+          AND ans.deleted_at IS NULL -- CRITICAL FIX
+          AND q.deleted_at IS NULL   -- CRITICAL FIX
+        ORDER BY ans.created_at DESC
+    ) a;
+
+    -- 3. Get answers voted on by the user (excluding soft-deleted items)
+    SELECT json_agg(va) INTO user_voted_answers
+    FROM (
+        SELECT ans.id, ans.content, ans.created_at,
+               json_build_object('id', q.id, 'title', q.title) AS "Question"
+        FROM public."Vote" AS v
+        JOIN public."Answer" AS ans ON v.answer_id = ans.id
+        JOIN public."Question" AS q ON ans.question_id = q.id
+        WHERE v.user_id = p_user_id
+          AND ans.deleted_at IS NULL -- CRITICAL FIX
+          AND q.deleted_at IS NULL   -- CRITICAL FIX
+        ORDER BY ans.created_at DESC -- Fixed typo from v.created_at
+    ) va;
+
+    -- 4. Return all data as a single JSON object
+    RETURN json_build_object(
+        'questions', COALESCE(user_questions, '[]'::json),
+        'answers', COALESCE(user_answers, '[]'::json),
+        'votedAnswers', COALESCE(user_voted_answers, '[]'::json)
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

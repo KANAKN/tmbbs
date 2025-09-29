@@ -1,61 +1,72 @@
-// /Users/KN/code/tmbbs/src/app/questions/new/_components/NewQuestionForm.tsx
 'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { User } from '@supabase/supabase-js'
-import QuestionPreview from '@/components/QuestionPreview'
 
 type Category = { id: string; name: string }
-type NewQuestionFormProps = {
-  user: User
-  categories: Category[]
+
+type Question = {
+  id: string
+  title: string
+  description: string
+  user_id: string
+  category_id: string | null
+  is_draft: boolean
+  Category: { id: string; name: string } | null
+  Tag: { name: string }[]
 }
 
-export default function NewQuestionForm({ user, categories }: NewQuestionFormProps) {
+type EditQuestionFormProps = {
+  question: Question
+  categories: Category[]
+  tagsString: string
+  user: User
+}
+
+export default function EditQuestionForm({ question, categories, tagsString, user }: EditQuestionFormProps) {
   const supabase = createClient()
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [categoryId, setCategoryId] = useState<string>('')
-  const [tags, setTags] = useState('')
+  const [title, setTitle] = useState(question.title)
+  const [description, setDescription] = useState(question.description)
+  const [categoryId, setCategoryId] = useState(question.category_id || '')
+  const [tags, setTags] = useState(tagsString)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [savingDraft, setSavingDraft] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
 
-  const handleShowPreview = (e: React.FormEvent) => {
+  const handleUpdateQuestion = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-
-    if (!categoryId) {
-      setError('カテゴリを選択してください。')
-      return
-    }
-
-    setShowPreview(true)
-  }
-
-  const handleConfirmPost = async () => {
     setError('')
     setLoading(true)
 
-    const { data: newQuestion, error: insertError } = await supabase
-      .from('Question')
-      .insert({ title, description, user_id: user.id, category_id: categoryId })
-      .select()
-      .single()
-
-    if (insertError) {
-      setError(`エラーが発生しました: ${insertError.message}`)
+    if (!categoryId) {
+      setError('カテゴリを選択してください。')
       setLoading(false)
       return
     }
 
-    if (newQuestion && tags.trim()) {
+    const { error: updateError } = await supabase
+      .from('Question')
+      .update({ 
+        title, 
+        description, 
+        category_id: categoryId,
+        is_draft: false // 公開投稿
+      })
+      .eq('id', question.id)
+
+    if (updateError) {
+      setError(`エラーが発生しました: ${updateError.message}`)
+      setLoading(false)
+      return
+    }
+
+    // タグを更新
+    if (tags.trim()) {
       const { error: tagsError } = await supabase.rpc('handle_question_tags', {
-        p_question_id: newQuestion.id,
+        p_question_id: question.id,
         p_tag_names: tags,
       })
       if (tagsError) {
@@ -64,40 +75,33 @@ export default function NewQuestionForm({ user, categories }: NewQuestionFormPro
     }
     
     setLoading(false)
-    window.location.href = `/questions/${newQuestion.id}`
+    router.push(`/questions/${question.id}`)
   }
 
   const handleSaveDraft = async () => {
     setError('')
     setSavingDraft(true)
 
-    if (!title.trim() && !description.trim()) {
-      setError('タイトルまたは内容を入力してください。')
-      setSavingDraft(false)
-      return
-    }
-
-    const { data: draftQuestion, error: insertError } = await supabase
+    const { error: updateError } = await supabase
       .from('Question')
-      .insert({ 
-        title: title || '下書き', 
-        description: description || '', 
-        user_id: user.id, 
+      .update({ 
+        title, 
+        description, 
         category_id: categoryId || null,
-        is_draft: true 
+        is_draft: true // 下書きとして保存
       })
-      .select()
-      .single()
+      .eq('id', question.id)
 
-    if (insertError) {
-      setError(`エラーが発生しました: ${insertError.message}`)
+    if (updateError) {
+      setError(`エラーが発生しました: ${updateError.message}`)
       setSavingDraft(false)
       return
     }
 
-    if (draftQuestion && tags.trim()) {
+    // タグを更新
+    if (tags.trim()) {
       const { error: tagsError } = await supabase.rpc('handle_question_tags', {
-        p_question_id: draftQuestion.id,
+        p_question_id: question.id,
         p_tag_names: tags,
       })
       if (tagsError) {
@@ -109,31 +113,13 @@ export default function NewQuestionForm({ user, categories }: NewQuestionFormPro
     alert('下書きを保存しました。')
   }
 
-  const handleBackToEdit = () => {
-    setShowPreview(false)
-  }
-
-  // プレビュー表示の場合
-  if (showPreview) {
-    return (
-      <QuestionPreview
-        title={title}
-        description={description}
-        categoryId={categoryId}
-        tags={tags}
-        categories={categories}
-        onEdit={handleBackToEdit}
-        onConfirm={handleConfirmPost}
-        loading={loading}
-      />
-    )
-  }
-
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
       <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6">新しい質問を投稿する</h1>
-        <form onSubmit={handleShowPreview} className="space-y-6">
+        <h1 className="text-2xl font-bold mb-6">
+          {question.is_draft ? '下書きを編集する' : '質問を編集する'}
+        </h1>
+        <form onSubmit={handleUpdateQuestion} className="space-y-6">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
               タイトル
@@ -203,7 +189,7 @@ export default function NewQuestionForm({ user, categories }: NewQuestionFormPro
               disabled={loading || savingDraft}
               className="flex-1 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
             >
-              プレビュー
+              {loading ? '更新中...' : question.is_draft ? '投稿する' : '更新する'}
             </button>
             <button
               type="button"

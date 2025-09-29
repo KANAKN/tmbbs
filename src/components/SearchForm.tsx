@@ -2,47 +2,98 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
-export default function SearchForm() {
+type Category = {
+  id: string
+  name: string
+}
+
+type Tag = {
+  id: number
+  name: string
+}
+
+type SearchFormProps = {
+  categories: Category[]
+  topTags: Tag[]
+}
+
+export default function SearchForm({ categories, topTags }: SearchFormProps) {
+  const [keyword, setKeyword] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
   const router = useRouter()
-  const [query, setQuery] = useState('')
 
+  // キーワードとカテゴリでの検索処理
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!query.trim()) return
-    // 検索結果ページにクエリパラメータを付けて遷移
-    router.push(`/search?q=${encodeURIComponent(query)}`)
+    const params = new URLSearchParams()
+    if (keyword) {
+      params.set('keyword', keyword)
+    }
+    if (selectedCategory) {
+      params.set('category', selectedCategory)
+    }
+    
+    // 検索パラメータがある場合のみページ遷移
+    if (params.toString()) {
+      router.push(`/search?${params.toString()}`)
+    }
   }
 
   return (
-    <form onSubmit={handleSearch} className="w-full max-w-xs mx-auto">
-      <div className="flex items-center">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="キーワードで検索..."
-          className="w-full px-3 py-2 text-sm text-gray-700 bg-gray-200 rounded-l-lg focus:outline-none focus:ring focus:ring-blue-300"
-        />
+    <div className="space-y-4">
+      <form onSubmit={handleSearch} className="space-y-4">
+        <div>
+          <label htmlFor="search-keyword" className="sr-only">キーワード検索</label>
+          <input
+            id="search-keyword"
+            type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="キーワードで検索..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="search-category" className="sr-only">カテゴリ</label>
+          <select
+            id="search-category"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+          >
+            <option value="">すべてのカテゴリ</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
         <button
           type="submit"
-          className="px-3 py-2 bg-gray-600 text-white rounded-r-lg hover:bg-gray-700 focus:outline-none focus:ring focus:ring-blue-300"
-          aria-label="検索"
+          className="w-full px-6 py-3 font-bold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 shadow-md transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clipRule="evenodd"
-            />
-          </svg>
+          検索する
         </button>
-      </div>
-    </form>
+      </form>
+
+      {/* 人気のタグを表示するセクション */}
+      {topTags && topTags.length > 0 && (
+        <div className="pt-4 border-t border-gray-200">
+          <h3 className="text-sm font-semibold text-slate-600 mb-3 text-center">人気のタグから探す</h3>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {topTags.map(tag => (
+              <Link
+                href={`/search?tag=${encodeURIComponent(tag.name)}`}
+                key={tag.id}
+                className="px-3 py-1 text-sm font-medium text-teal-800 bg-teal-100 rounded-full hover:bg-teal-200 transition-colors"
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -71,6 +71,9 @@ export default async function QuestionDetailPage({
   
   const { data: answers } = await query.order('created_at', { ascending: true })
 
+  // --- ステップ4: 全カテゴリリストを取得 ---
+  const { data: categories } = await supabase.from('Category').select('*').order('name', { ascending: true })
+
   const isQuestionOwner = session?.user?.id === question.user_id
 
   return (
@@ -86,6 +89,7 @@ export default async function QuestionDetailPage({
         initialAnswers={answers || []}
         session={session}
         isQuestionOwner={isQuestionOwner}
+        categories={categories || []}
       />
 
       <AnswerForm
