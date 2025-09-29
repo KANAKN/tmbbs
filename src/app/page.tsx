@@ -20,10 +20,11 @@ type Question = {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { sort?: string; page?: string }
+  searchParams: Promise<{ sort?: string; page?: string }>
 }) {
-  const { sort = 'newest' } = searchParams
-  const page = parseInt(searchParams.page || '1', 10)
+  const resolvedSearchParams = await searchParams
+  const { sort = 'newest' } = resolvedSearchParams
+  const page = parseInt(resolvedSearchParams.page || '1', 10)
   const pageSize = 10
   const offset = (page - 1) * pageSize
 

@@ -24,10 +24,11 @@ type SearchResult = {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { keyword?: string; category?: string; tag?: string }
+  searchParams: Promise<{ keyword?: string; category?: string; tag?: string }>
 }) {
   const supabase = await createClient()
-  const { keyword, category, tag } = searchParams
+  const resolvedSearchParams = await searchParams
+  const { keyword, category, tag } = resolvedSearchParams
 
   let query = supabase
     .from('Question')
